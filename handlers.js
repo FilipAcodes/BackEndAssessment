@@ -25,7 +25,7 @@ const createAcronym = async (req, res) => {
   const addAcronym = await db
     .collection("acronym")
     .insertOne({ _id: uuidv4(), acronym: acronym, definition: definition });
-
+  client.close();
   addAcronym.acknowledged
     ? res.status(201).json({
         status: 201,
@@ -57,6 +57,7 @@ const updateAcronym = async (req, res) => {
   const newUpdateAcronym = await db
     .collection("acronym")
     .updateOne({ _id: _id }, filter);
+  client.close();
 
   newUpdateAcronym.matchedCount === 0
     ? res.status(400).json({
@@ -81,6 +82,7 @@ const deleteAcronym = async (req, res) => {
   const deleteAcronymFromDb = await db
     .collection("acronym")
     .deleteOne({ _id: acronymID });
+  client.close();
 
   deleteAcronymFromDb.deletedCount === 0
     ? res.status(400).json({
@@ -93,4 +95,22 @@ const deleteAcronym = async (req, res) => {
         message: "Acronym successfully deleted",
       });
 };
-module.exports = { createAcronym, updateAcronym, deleteAcronym };
+
+const getAcronym = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const search = req.query.search || "";
+
+  const skip = (page - 1) * limit;
+  const regex = new RegExp(search, "i");
+
+  const count = await Acronym.countDocuments({ name: regex });
+  const acronyms = await Acronym.find({ name: regex }).skip(skip).limit(limit);
+
+  const hasMore = count > skip + limit;
+
+  res.setHeader("X-Has-More", hasMore);
+  res.json(acronyms);
+};
+
+module.exports = { createAcronym, updateAcronym, deleteAcronym, getAcronym };

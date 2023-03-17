@@ -1,7 +1,12 @@
 "use strict";
 const express = require("express");
 const morgan = require("morgan");
-const { createAcronym, updateAcronym, deleteAcronym } = require("./handlers");
+const {
+  createAcronym,
+  updateAcronym,
+  deleteAcronym,
+  getAcronym,
+} = require("./handlers");
 
 express()
   .use(morgan("tiny"))
@@ -13,7 +18,7 @@ express()
       .status(200)
       .json({ status: 200, message: "Hello there your server works" });
   })
-
+  .get("/acronym", getAcronym)
   .post("/acronym", createAcronym)
   .patch("/acronym/:acronymID", updateAcronym)
   .delete("/acronym/:acronymID", deleteAcronym)
