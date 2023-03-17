@@ -8,3 +8,4 @@
 4. This should create some data in your database.
 5. Feel free to rename the collection names and/or the database name as well.
 6. The endpoints were tested using Insomnia for ease.
+7. The server.js is where our server is, handlers.js is where all the functions are created and used.
