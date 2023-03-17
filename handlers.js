@@ -24,7 +24,7 @@ const createAcronym = async (req, res) => {
   const db = client.db("apitesting");
   const addAcronym = await db
     .collection("acronym")
-    .insertOne({ _id: uuidv4(), acronym: acronym, definition: definition });
+    .insertOne({ _id: acronym, definition: definition });
 
   addAcronym.acknowledged
     ? res.status(201).json({
@@ -38,4 +38,32 @@ const createAcronym = async (req, res) => {
       });
 };
 
-module.exports = { createAcronym };
+//
+const updateAcronym = async (req, res) => {
+  const { acronymID } = req.params;
+  const { definition } = req.body;
+  const _id = acronymID;
+  const filter = {
+    $set: { definition: definition },
+  };
+  const client = new MongoClient(MONGO_URI, options);
+  await client.connect();
+  const db = client.db("apitesting");
+
+  const newUpdateAcronym = await db
+    .collection("acronym")
+    .updateOne({ _id: _id }, filter);
+
+  newUpdateAcronym.matchedCount === 0
+    ? res.status(400).json({
+        status: 400,
+        message: "An Error has Occured,the document could not be updated",
+      })
+    : res.status(200).json({
+        status: 200,
+        data: [{ acronymID: acronymID }, { definition: definition }],
+        message: "Acronym successfully created",
+      });
+};
+
+module.exports = { createAcronym, updateAcronym };
