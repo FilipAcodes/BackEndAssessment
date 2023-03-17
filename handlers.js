@@ -95,7 +95,8 @@ const deleteAcronym = async (req, res) => {
         message: "Acronym successfully deleted",
       });
 };
-
+//Get Method that returns what is being requested
+//Unclear on what is demanded from the test
 const getAcronym = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -103,14 +104,32 @@ const getAcronym = async (req, res) => {
 
   const skip = (page - 1) * limit;
   const regex = new RegExp(search, "i");
+  const client = new MongoClient(MONGO_URI, options);
 
-  const count = await Acronym.countDocuments({ name: regex });
-  const acronyms = await Acronym.find({ name: regex }).skip(skip).limit(limit);
+  try {
+    await client.connect();
+    const database = client.db("mydatabase");
+    const collection = database.collection("acronyms");
 
-  const hasMore = count > skip + limit;
+    const count = await collection.countDocuments({ name: regex });
+    const acronyms = await collection
+      .find({ name: regex })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
 
-  res.setHeader("X-Has-More", hasMore);
-  res.json(acronyms);
+    const hasMore = count > skip + limit;
+
+    res.setHeader("X-Has-More", hasMore);
+    res
+      .status(200)
+      .json({ status: 200, data: acronyms, message: "Data from query" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Internal server error" });
+  } finally {
+    await client.close();
+  }
 };
 
 module.exports = { createAcronym, updateAcronym, deleteAcronym, getAcronym };
