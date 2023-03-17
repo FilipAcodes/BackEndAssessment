@@ -24,7 +24,7 @@ const createAcronym = async (req, res) => {
   const db = client.db("apitesting");
   const addAcronym = await db
     .collection("acronym")
-    .insertOne({ _id: acronym, definition: definition });
+    .insertOne({ _id: uuidv4(), acronym: acronym, definition: definition });
 
   addAcronym.acknowledged
     ? res.status(201).json({
@@ -38,13 +38,16 @@ const createAcronym = async (req, res) => {
       });
 };
 
-//
+//Updates an acronym based on it's _id since it's unique
+//If the ID is changed to the acronym itself, code needs to be changed to fit the query
 const updateAcronym = async (req, res) => {
   const { acronymID } = req.params;
-  const { definition } = req.body;
+  const { acronym } = req.body;
+  //possibility to add definition update if requested
   const _id = acronymID;
+
   const filter = {
-    $set: { definition: definition },
+    $set: { acronym: acronym },
   };
   const client = new MongoClient(MONGO_URI, options);
   await client.connect();
@@ -61,8 +64,8 @@ const updateAcronym = async (req, res) => {
       })
     : res.status(200).json({
         status: 200,
-        data: [{ acronymID: acronymID }, { definition: definition }],
-        message: "Acronym successfully created",
+        data: [{ acronymID: acronymID }, { acronym: acronym }],
+        message: "Acronym successfully updated",
       });
 };
 
