@@ -1,7 +1,7 @@
 "use strict";
 const express = require("express");
 const morgan = require("morgan");
-const { createAcronym, updateAcronym } = require("./handlers");
+const { createAcronym, updateAcronym, deleteAcronym } = require("./handlers");
 
 express()
   .use(morgan("tiny"))
@@ -16,6 +16,7 @@ express()
 
   .post("/acronym", createAcronym)
   .patch("/acronym/:acronymID", updateAcronym)
+  .delete("/acronym/:acronymID", deleteAcronym)
   .get("*", (req, res) => {
     res.status(404).json({ status: 404, message: "404 Not found!" });
   })

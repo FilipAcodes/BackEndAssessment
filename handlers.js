@@ -40,6 +40,7 @@ const createAcronym = async (req, res) => {
 
 //Updates an acronym based on it's _id since it's unique
 //If the ID is changed to the acronym itself, code needs to be changed to fit the query
+//sends a response back based on the matchedCount
 const updateAcronym = async (req, res) => {
   const { acronymID } = req.params;
   const { acronym } = req.body;
@@ -69,4 +70,27 @@ const updateAcronym = async (req, res) => {
       });
 };
 
-module.exports = { createAcronym, updateAcronym };
+//Deletes an acronym based on it's ID, in the URL
+//sends a response back depending on the deletedCount if it is successful
+const deleteAcronym = async (req, res) => {
+  const { acronymID } = req.params;
+  const client = new MongoClient(MONGO_URI, options);
+  await client.connect();
+  const db = client.db("apitesting");
+
+  const deleteAcronymFromDb = await db
+    .collection("acronym")
+    .deleteOne({ _id: acronymID });
+
+  deleteAcronymFromDb.deletedCount === 0
+    ? res.status(400).json({
+        status: 400,
+        message:
+          "An Error has Occured,the document could not be deleted or has arleady been deleted",
+      })
+    : res.status(202).json({
+        status: 202,
+        message: "Acronym successfully deleted",
+      });
+};
+module.exports = { createAcronym, updateAcronym, deleteAcronym };
